@@ -21,7 +21,7 @@
     <canvas id="qrCanvas" width="300" height="300"></canvas>
     <button id="downloadBtn" style="display: none;">Download</button>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
     <script>
         const form = document.getElementById('qrForm');
         const canvas = document.getElementById('qrCanvas');
@@ -35,34 +35,27 @@
         });
 
         function generateTriangularQR(data) {
-            // Generate QR code with high error correction level but do not render it directly
-            QRCode.toDataURL(data, { errorCorrectionLevel: 'H' }, function (error, url) {
-                if (error) {
-                    console.error(error);
-                    return;
-                }
-                // Decode the QR code data matrix and render triangles
-                renderTriangleQR(data);
-            });
-        }
-
-        function renderTriangleQR(data) {
-            // Create the QR code data matrix without rendering directly
-            const qr = new QRCode({ errorCorrectionLevel: 'H' });
+            // Create a QR code object with the desired error correction level
+            const qr = qrcode(4, 'H'); // Level 4 size with high error correction
             qr.addData(data);
             qr.make();
 
-            const cellSize = 10; // Size of each module
+            // Render QR code with triangles
+            renderTriangleQR(qr);
+        }
+
+        function renderTriangleQR(qr) {
+            const moduleCount = qr.getModuleCount();
+            const cellSize = 10; // Size of each triangle cell
             const margin = 10; // Margin around the QR code
-            const size = qr.getModuleCount(); // Number of modules in one row/column
-            canvas.width = canvas.height = size * cellSize + margin * 2;
+            canvas.width = canvas.height = moduleCount * cellSize + margin * 2;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'black';
 
-            // Loop through each module and draw a triangle instead of a square
-            for (let row = 0; row < size; row++) {
-                for (let col = 0; col < size; col++) {
+            // Loop through each module and draw triangles instead of squares
+            for (let row = 0; row < moduleCount; row++) {
+                for (let col = 0; col < moduleCount; col++) {
                     if (qr.isDark(row, col)) {
                         drawTriangle(col * cellSize + margin, row * cellSize + margin, cellSize);
                     }

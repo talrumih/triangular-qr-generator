@@ -35,29 +35,51 @@
         });
 
         function generateTriangularQR(data) {
-            // Generate QR code with high error correction level
-            QRCode.toCanvas(canvas, data, { errorCorrectionLevel: 'H' }, function (error) {
-                if (error) console.error(error);
-                applyTriangleOverlay();
-                downloadBtn.style.display = 'block';
+            // Generate QR code with high error correction level but do not render it directly
+            QRCode.toDataURL(data, { errorCorrectionLevel: 'H' }, function (error, url) {
+                if (error) {
+                    console.error(error);
+                    return;
+                }
+                // Decode the QR code data matrix and render triangles
+                renderTriangleQR(data);
             });
         }
 
-        function applyTriangleOverlay() {
-            const width = canvas.width;
-            const height = canvas.height;
+        function renderTriangleQR(data) {
+            // Create the QR code data matrix without rendering directly
+            const qr = new QRCode({ errorCorrectionLevel: 'H' });
+            qr.addData(data);
+            qr.make();
 
-            // Create a semi-transparent triangular overlay
-            ctx.globalAlpha = 0.3; // Adjust opacity to keep QR code readable
-            ctx.fillStyle = 'white'; // White overlay to make it blend
+            const cellSize = 10; // Size of each module
+            const margin = 10; // Margin around the QR code
+            const size = qr.getModuleCount(); // Number of modules in one row/column
+            canvas.width = canvas.height = size * cellSize + margin * 2;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'black';
+
+            // Loop through each module and draw a triangle instead of a square
+            for (let row = 0; row < size; row++) {
+                for (let col = 0; col < size; col++) {
+                    if (qr.isDark(row, col)) {
+                        drawTriangle(col * cellSize + margin, row * cellSize + margin, cellSize);
+                    }
+                }
+            }
+
+            downloadBtn.style.display = 'block';
+        }
+
+        function drawTriangle(x, y, size) {
+            // Draw a triangle in each module position
             ctx.beginPath();
-            ctx.moveTo(0, height);
-            ctx.lineTo(width / 2, 0);
-            ctx.lineTo(width, height);
+            ctx.moveTo(x, y); // Top left point
+            ctx.lineTo(x + size, y); // Top right point
+            ctx.lineTo(x + size / 2, y + size); // Bottom center point
             ctx.closePath();
             ctx.fill();
-
-            ctx.globalAlpha = 1; // Reset opacity
         }
 
         downloadBtn.addEventListener('click', function () {

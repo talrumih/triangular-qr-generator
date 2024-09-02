@@ -35,19 +35,21 @@
         });
 
         function generateTriangularQR(data) {
+            // Generate QR code with high error correction level
             QRCode.toCanvas(canvas, data, { errorCorrectionLevel: 'H' }, function (error) {
                 if (error) console.error(error);
-                applyTriangleMask();
+                applyTriangleOverlay();
                 downloadBtn.style.display = 'block';
             });
         }
 
-        function applyTriangleMask() {
+        function applyTriangleOverlay() {
             const width = canvas.width;
             const height = canvas.height;
 
-            // Create a triangular mask
-            ctx.globalCompositeOperation = 'destination-in';
+            // Create a semi-transparent triangular overlay
+            ctx.globalAlpha = 0.3; // Adjust opacity to keep QR code readable
+            ctx.fillStyle = 'white'; // White overlay to make it blend
             ctx.beginPath();
             ctx.moveTo(0, height);
             ctx.lineTo(width / 2, 0);
@@ -55,7 +57,7 @@
             ctx.closePath();
             ctx.fill();
 
-            ctx.globalCompositeOperation = 'source-over'; // Reset to default
+            ctx.globalAlpha = 1; // Reset opacity
         }
 
         downloadBtn.addEventListener('click', function () {

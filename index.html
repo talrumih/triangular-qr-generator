@@ -35,18 +35,26 @@
         });
 
         function generateTriangularQR(data) {
-            // Create a QR code object with the desired error correction level
-            const qr = qrcode(4, 'H'); // Level 4 size with high error correction
-            qr.addData(data);
-            qr.make();
+            // Adjust QR code version and error correction level based on data length
+            let version = 6; // Increase this if data is still too large
+            let errorCorrectionLevel = 'M'; // Try 'L' if data is still too large
 
-            // Render QR code with triangles
-            renderTriangleQR(qr);
+            try {
+                // Create a QR code object
+                const qr = qrcode(version, errorCorrectionLevel);
+                qr.addData(data);
+                qr.make();
+
+                // Render QR code with triangles
+                renderTriangleQR(qr);
+            } catch (error) {
+                alert(`Error generating QR code: ${error.message}`);
+            }
         }
 
         function renderTriangleQR(qr) {
             const moduleCount = qr.getModuleCount();
-            const cellSize = 10; // Size of each triangle cell
+            const cellSize = 8; // Size of each triangle cell
             const margin = 10; // Margin around the QR code
             canvas.width = canvas.height = moduleCount * cellSize + margin * 2;
 
@@ -66,7 +74,7 @@
         }
 
         function drawTriangle(x, y, size) {
-            // Draw a triangle in each module position
+            // Draw a triangle to closely mimic the original square module
             ctx.beginPath();
             ctx.moveTo(x, y); // Top left point
             ctx.lineTo(x + size, y); // Top right point

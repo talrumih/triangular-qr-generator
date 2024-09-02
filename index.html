@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle QR Code Generator</title>
+    <style>
+        #qrCanvas {
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Triangle QR Code Generator</h1>
+    <form id="qrForm">
+        <input type="text" id="qrData" placeholder="Enter your data" required>
+        <button type="submit">Generate QR Code</button>
+    </form>
+    <canvas id="qrCanvas" width="300" height="300"></canvas>
+    <button id="downloadBtn" style="display: none;">Download</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script>
+        const form = document.getElementById('qrForm');
+        const canvas = document.getElementById('qrCanvas');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const ctx = canvas.getContext('2d');
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const data = document.getElementById('qrData').value;
+            generateTriangularQR(data);
+        });
+
+        function generateTriangularQR(data) {
+            QRCode.toCanvas(canvas, data, { errorCorrectionLevel: 'H' }, function (error) {
+                if (error) console.error(error);
+                applyTriangleMask();
+                downloadBtn.style.display = 'block';
+            });
+        }
+
+        function applyTriangleMask() {
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Create a triangular mask
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            ctx.moveTo(0, height);
+            ctx.lineTo(width / 2, 0);
+            ctx.lineTo(width, height);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.globalCompositeOperation = 'source-over'; // Reset to default
+        }
+
+        downloadBtn.addEventListener('click', function () {
+            const link = document.createElement('a');
+            link.download = 'triangle-qr-code.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    </script>
+</body>
+</html>
